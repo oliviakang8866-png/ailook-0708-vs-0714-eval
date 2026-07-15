@@ -81,15 +81,16 @@
   .img-link:hover { text-decoration: underline; }
 
   .vote-sidebar { display: flex; flex-direction: column; gap: 8px; width: 170px; flex-shrink: 0; }
+  .vote-sidebar .remark-input { flex-basis: 100%; }
 
   @media (max-width: 900px) {
     .row-body { flex-direction: column; }
-    .vote-sidebar { flex-direction: row; width: 100%; }
+    .vote-sidebar { flex-direction: row; flex-wrap: wrap; width: 100%; }
+    .vote-sidebar button { flex: 1 1 100px; }
     .main-cells { grid-template-columns: repeat(3, 1fr); width: 100%; }
   }
   @media (max-width: 640px) {
     .main-cells { grid-template-columns: repeat(2, 1fr); }
-    .vote-sidebar { flex-wrap: wrap; }
   }
 
   #finish-bar {
@@ -120,6 +121,14 @@
   .vote-sidebar button.chosen { background: #234; border-color: #4a9eff; color: #9ecbff; }
   .vote-sidebar button.chosen.both-good { border-color: #6ad16a; color: #b6ffb6; background: #123a12; }
   .vote-sidebar button.chosen.both-bad { border-color: #d95c5c; color: #ffb0b0; background: #331414; }
+  .remark-input {
+    flex: 1; min-height: 80px; resize: vertical; background: #0a0a0a; color: #ddd;
+    border: 1px solid #333; border-radius: 6px; padding: 8px 10px; font-size: 12px;
+    font-family: inherit; line-height: 1.4;
+  }
+  .remark-input::placeholder { color: #555; }
+  .remark-input:focus { outline: none; border-color: #4a9eff; }
+  .remark-status { font-size: 10px; color: #666; text-align: right; min-height: 12px; }
 
   #lightbox {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92);
@@ -169,8 +178,10 @@ const DATA = [{"index": 0, "item_id": "27210793460", "category": "Winter Jackets
 const EXEC_URL = 'https://script.google.com/macros/s/AKfycbyOA5T9Mg8YVEJp8BsTf8mbd12f8QdDeZHZVWRzEO_8o2BGAiiiGPSGTaFyr3Vj0aOPFw/exec';
 const NAME_KEY = 'ailook-eval-name';
 const VOTES_KEY_PREFIX = 'ailook-eval-votes-';
+const REMARKS_KEY_PREFIX = 'ailook-eval-remarks-';
 let evaluator = localStorage.getItem(NAME_KEY) || '';
 let votes = {};
+let remarks = {};
 let saving = {};
 
 function localVotesKey() { return VOTES_KEY_PREFIX + evaluator; }
@@ -179,6 +190,14 @@ function loadLocalVotes() {
 }
 function saveLocalVotes() {
   localStorage.setItem(localVotesKey(), JSON.stringify(votes));
+}
+
+function localRemarksKey() { return REMARKS_KEY_PREFIX + evaluator; }
+function loadLocalRemarks() {
+  try { return JSON.parse(localStorage.getItem(localRemarksKey()) || '{}'); } catch (e) { return {}; }
+}
+function saveLocalRemarks() {
+  localStorage.setItem(localRemarksKey(), JSON.stringify(remarks));
 }
 
 function esc(s) {
@@ -196,6 +215,7 @@ function submitName() {
 
 function loadMyVotes() {
   votes = loadLocalVotes();
+  remarks = loadLocalRemarks();
   renderSummary();
   buildRows();
 
@@ -287,8 +307,18 @@ function headerThumb(label, url) {
 function cast(rowIndex, choice) {
   votes[rowIndex] = choice;
   saveLocalVotes();
-  renderSummary();
   renderRow(rowIndex);
+  submitRow(rowIndex);
+}
+
+function onRemarkChange(rowIndex, text) {
+  remarks[rowIndex] = text;
+  saveLocalRemarks();
+  submitRow(rowIndex);
+}
+
+function submitRow(rowIndex) {
+  renderSummary();
 
   const row = DATA[rowIndex];
   const statusEl = document.getElementById('save-status');
@@ -298,7 +328,8 @@ function cast(rowIndex, choice) {
     evaluator: evaluator,
     rowIndex: rowIndex,
     itemId: row.item_id,
-    choice: choice,
+    choice: votes[rowIndex] || '',
+    remark: remarks[rowIndex] || '',
     aModel: row.options[0].key,
     bModel: row.options[1].key,
     aUrl: row.options[0].url,
@@ -359,7 +390,12 @@ function renderRow(index) {
         cell('选项 A', optA.url, null) +
         cell('选项 B', optB.url, null) +
       '</div>' +
-      '<div class="vote-sidebar">' + optionButtonsHtml(row) + '</div>' +
+      '<div class="vote-sidebar">' +
+        optionButtonsHtml(row) +
+        '<textarea class="remark-input" placeholder="备注（可选）" ' +
+          'oninput="remarks[' + row.index + ']=this.value" ' +
+          'onblur="onRemarkChange(' + row.index + ', this.value)">' + esc(remarks[row.index] || '') + '</textarea>' +
+      '</div>' +
     '</div>';
 }
 
