@@ -55,8 +55,8 @@
   }
   .row.voted { border-color: #2a5a2a; }
   .row-header { font-size: 13px; color: #999; margin-bottom: 12px; word-break: break-all; }
-  .cells { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 14px; }
-  .cell { display: flex; flex-direction: column; gap: 6px; }
+  .cells { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .cell { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
   .label { font-size: 12px; color: #bbb; text-align: center; min-height: 16px; }
   .img-wrap {
     background: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 8px; overflow: hidden;
