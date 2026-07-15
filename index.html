@@ -319,18 +319,21 @@ function renderRow(index) {
   const row = DATA[index];
   const v = votes[row.index];
   const el = document.getElementById('row-' + row.index);
-  const revealed = !!v;
+  const voted = !!v;
   const optA = row.options[0], optB = row.options[1];
 
-  el.className = 'row' + (revealed ? ' voted' : '');
+  // Never reveal which model A/B actually are — the mapping only lives in
+  // the backend Sheet (A_model/B_model columns) for later analysis, so the
+  // evaluator can't build up positional bias across rows.
+  el.className = 'row' + (voted ? ' voted' : '');
   el.innerHTML =
     '<div class="row-header">#' + (row.index + 1) + ' · ' + esc(row.category) + '</div>' +
     '<div class="cells">' +
       cell('用户图', row.user_img, null) +
       cell('模版图', row.template_img, null) +
       cell('主商品图', row.product_img, null) +
-      cell('选项 A', optA.url, revealed ? optA.label : null) +
-      cell('选项 B', optB.url, revealed ? optB.label : null) +
+      cell('选项 A', optA.url, null) +
+      cell('选项 B', optB.url, null) +
     '</div>' +
     '<div class="vote-buttons">' + optionButtonsHtml(row) + '</div>';
 }
