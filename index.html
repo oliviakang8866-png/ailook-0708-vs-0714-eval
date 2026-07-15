@@ -157,7 +157,7 @@
 <div id="rows"></div>
 
 <div id="finish-bar">
-  <button id="finish-btn" onclick="finishEvaluation()" disabled>提交本次评测（40 行全部打完后可用）</button>
+  <button id="finish-btn" onclick="finishEvaluation()" disabled>提交本次评测（100 行全部打完后可用）</button>
   <div class="hint" id="finish-hint"></div>
 </div>
 
@@ -169,7 +169,7 @@
 <div id="finish-screen">
   <div class="box">
     <h2>✓ 已提交，谢谢你的评测！</h2>
-    <p>你一共完成了 40 行打分，结果已经写入统计表格。</p>
+    <p id="finish-screen-text"></p>
   </div>
 </div>
 
@@ -271,6 +271,7 @@ function renderSummary() {
 }
 
 function finishEvaluation() {
+  const votedCount = Object.keys(votes).length;
   fetch(EXEC_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -278,6 +279,8 @@ function finishEvaluation() {
   })
     .catch(function() { /* local votes are already saved regardless */ })
     .finally(function() {
+      document.getElementById('finish-screen-text').textContent =
+        '你一共完成了 ' + votedCount + ' / ' + DATA.length + ' 行打分，结果已经写入统计表格。';
       document.getElementById('finish-screen').classList.add('open');
     });
 }
