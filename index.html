@@ -54,26 +54,42 @@
     padding: 16px; margin-bottom: 20px;
   }
   .row.voted { border-color: #2a5a2a; }
-  .row-header { font-size: 13px; color: #999; margin-bottom: 12px; word-break: break-all; }
-  .cells { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+
+  .row-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+  .header-title { font-size: 13px; color: #999; word-break: break-all; }
+  .header-thumbs { display: flex; gap: 10px; }
+  .header-thumb { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .header-thumb img {
+    width: 52px; height: 52px; object-fit: cover; border-radius: 6px;
+    border: 1px solid #2a2a2a; background: #0a0a0a; cursor: zoom-in; display: block;
+  }
+  .header-thumb .thumb-label { font-size: 9px; color: #777; }
+
+  .row-body { display: flex; gap: 16px; align-items: flex-start; }
+  .main-cells { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; min-width: 0; }
   .cell { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
   .label { font-size: 12px; color: #bbb; text-align: center; min-height: 16px; }
   .img-wrap {
     background: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 8px; overflow: hidden;
     min-height: 100px; display: flex; align-items: center; justify-content: center;
   }
-  .img-wrap img { width: 100%; height: auto; max-height: 320px; object-fit: contain; display: block; cursor: zoom-in; }
+  .img-wrap img { width: 100%; height: auto; max-height: 380px; object-fit: contain; display: block; cursor: zoom-in; }
   .img-link {
     font-size: 10px; color: #6a9edb; text-align: center; overflow: hidden;
     text-overflow: ellipsis; white-space: nowrap; display: block; text-decoration: none;
   }
   .img-link:hover { text-decoration: underline; }
 
-  @media (max-width: 1100px) {
-    .cells { grid-template-columns: repeat(3, 1fr); }
+  .vote-sidebar { display: flex; flex-direction: column; gap: 8px; width: 170px; flex-shrink: 0; }
+
+  @media (max-width: 900px) {
+    .row-body { flex-direction: column; }
+    .vote-sidebar { flex-direction: row; width: 100%; }
+    .main-cells { grid-template-columns: repeat(3, 1fr); width: 100%; }
   }
   @media (max-width: 640px) {
-    .cells { grid-template-columns: repeat(2, 1fr); }
+    .main-cells { grid-template-columns: repeat(2, 1fr); }
+    .vote-sidebar { flex-wrap: wrap; }
   }
 
   #finish-bar {
@@ -95,19 +111,15 @@
   #finish-screen h2 { color: #8fd18f; margin: 0 0 10px 0; }
   #finish-screen p { color: #aaa; font-size: 13px; }
 
-  .vote-buttons { display: flex; gap: 8px; margin-top: 12px; }
-  .vote-buttons button {
+  .vote-sidebar button {
     flex: 1; background: #1c1c1c; border: 1px solid #333; color: #ddd;
-    padding: 10px 6px; border-radius: 6px; font-size: 13px; cursor: pointer;
+    padding: 14px 10px; border-radius: 6px; font-size: 13px; cursor: pointer;
     transition: background .15s, border-color .15s;
   }
-  .vote-buttons button:hover { background: #2a2a2a; }
-  .vote-buttons button.chosen { background: #234; border-color: #4a9eff; color: #9ecbff; }
-  .vote-buttons button.chosen.both-good { border-color: #6ad16a; color: #b6ffb6; background: #123a12; }
-  .vote-buttons button.chosen.both-bad { border-color: #d95c5c; color: #ffb0b0; background: #331414; }
-
-  .reveal { font-size: 11px; color: #666; text-align: center; margin-top: 2px; }
-  .reveal .name { color: #8fd18f; font-weight: 600; }
+  .vote-sidebar button:hover { background: #2a2a2a; }
+  .vote-sidebar button.chosen { background: #234; border-color: #4a9eff; color: #9ecbff; }
+  .vote-sidebar button.chosen.both-good { border-color: #6ad16a; color: #b6ffb6; background: #123a12; }
+  .vote-sidebar button.chosen.both-bad { border-color: #d95c5c; color: #ffb0b0; background: #331414; }
 
   #lightbox {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92);
@@ -265,6 +277,13 @@ function optionButtonsHtml(row) {
   }).join('');
 }
 
+function headerThumb(label, url) {
+  return '<div class="header-thumb">' +
+    '<img src="' + esc(url) + '" loading="lazy" alt="' + esc(label) + '" title="' + esc(url) + '">' +
+    '<span class="thumb-label">' + label + '</span>' +
+    '</div>';
+}
+
 function cast(rowIndex, choice) {
   votes[rowIndex] = choice;
   saveLocalVotes();
@@ -327,15 +346,21 @@ function renderRow(index) {
   // evaluator can't build up positional bias across rows.
   el.className = 'row' + (voted ? ' voted' : '');
   el.innerHTML =
-    '<div class="row-header">#' + (row.index + 1) + ' · ' + esc(row.category) + '</div>' +
-    '<div class="cells">' +
-      cell('用户图', row.user_img, null) +
-      cell('模版图', row.template_img, null) +
-      cell('主商品图', row.product_img, null) +
-      cell('选项 A', optA.url, null) +
-      cell('选项 B', optB.url, null) +
+    '<div class="row-header">' +
+      '<div class="header-thumbs">' +
+        headerThumb('用户图', row.user_img) +
+        headerThumb('商品图', row.product_img) +
+      '</div>' +
+      '<div class="header-title">#' + (row.index + 1) + ' · ' + esc(row.category) + '</div>' +
     '</div>' +
-    '<div class="vote-buttons">' + optionButtonsHtml(row) + '</div>';
+    '<div class="row-body">' +
+      '<div class="main-cells">' +
+        cell('模版图', row.template_img, null) +
+        cell('选项 A', optA.url, null) +
+        cell('选项 B', optB.url, null) +
+      '</div>' +
+      '<div class="vote-sidebar">' + optionButtonsHtml(row) + '</div>' +
+    '</div>';
 }
 
 function buildRows() {
