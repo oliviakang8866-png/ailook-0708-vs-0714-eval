@@ -201,10 +201,16 @@ const EXEC_URL = 'https://script.google.com/macros/s/AKfycbyOA5T9Mg8YVEJp8BsTf8m
 // TEST MODE: set back to true before sending this link to real evaluators —
 // it currently lets you submit without finishing all rows, for testing only.
 const REQUIRE_ALL_ROWS = false;
-const NAME_KEY = 'ailook-eval-name';
-const VOTES_KEY_PREFIX = 'ailook-eval-votes-';
-const REMARKS_KEY_PREFIX = 'ailook-eval-remarks-';
-const QUALITY_KEY_PREFIX = 'ailook-eval-quality-';
+// Bumped on every rebuild — deliberately invalidates any locally cached name/
+// votes/remarks/quality selections from a previous version of this page, so
+// each new deploy starts from a clean slate instead of showing stale local
+// state. The Google Sheet itself is untouched by this (it's the source of
+// truth); this only affects what a given browser has cached.
+const BUILD_VERSION = '1784193689';
+const NAME_KEY = 'ailook-eval-name-' + BUILD_VERSION;
+const VOTES_KEY_PREFIX = 'ailook-eval-votes-' + BUILD_VERSION + '-';
+const REMARKS_KEY_PREFIX = 'ailook-eval-remarks-' + BUILD_VERSION + '-';
+const QUALITY_KEY_PREFIX = 'ailook-eval-quality-' + BUILD_VERSION + '-';
 let evaluator = localStorage.getItem(NAME_KEY) || '';
 let votes = {};
 let remarks = {};
@@ -604,6 +610,18 @@ document.addEventListener('keydown', function(e) {
     document.getElementById('lightbox-img').src = '';
   }
 });
+
+// Sweep out any localStorage keys left behind by a previous build version.
+(function purgeStaleLocalStorage() {
+  const prefix = 'ailook-eval-';
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
+  keys.forEach(function(k) {
+    if (k && k.indexOf(prefix) === 0 && k.indexOf(BUILD_VERSION) === -1) {
+      localStorage.removeItem(k);
+    }
+  });
+})();
 
 if (evaluator) {
   document.getElementById('name-gate').style.display = 'none';
