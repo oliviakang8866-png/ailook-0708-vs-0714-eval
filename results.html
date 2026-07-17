@@ -15,20 +15,25 @@
   .warn { color: #d9a441; font-size: 12px; margin-bottom: 20px; }
 
   #toolbar {
-    display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+    display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap;
     background: #111; border: 1px solid #262626; border-radius: 10px;
     padding: 12px 16px; margin-bottom: 20px;
   }
-  #toolbar select {
-    background: #1c1c1c; color: #ddd; border: 1px solid #333; border-radius: 6px;
-    padding: 6px 10px; font-size: 13px;
+  #toolbar .filter-label { font-size: 12px; color: #999; margin-bottom: 6px; }
+  #evaluator-checkboxes { display: flex; gap: 12px; flex-wrap: wrap; }
+  #evaluator-checkboxes label {
+    display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: #ddd;
+    cursor: pointer; white-space: nowrap;
   }
   #toolbar button {
     background: #1c1c1c; border: 1px solid #333; color: #ccc; border-radius: 6px;
-    padding: 6px 14px; font-size: 13px; cursor: pointer;
+    padding: 6px 14px; font-size: 13px; cursor: pointer; align-self: flex-start;
   }
   #toolbar button:hover { background: #2a2a2a; }
-  #loading { color: #888; font-size: 13px; }
+  #loading { color: #888; font-size: 13px; align-self: flex-start; margin-top: 6px; }
+
+  .progress-bar-track { background: #262626; border-radius: 4px; height: 8px; width: 140px; overflow: hidden; }
+  .progress-bar-fill { background: #4a9eff; height: 100%; }
 
   .card {
     background: #111; border: 1px solid #262626; border-radius: 10px;
@@ -64,11 +69,10 @@
 <div class="warn">⚠️ 这个页面会展示真实模型对应关系，不要把链接发给评测人员</div>
 
 <div id="toolbar">
-  <label>筛选打分人：
-    <select id="evaluator-filter" onchange="render()">
-      <option value="">全部</option>
-    </select>
-  </label>
+  <div>
+    <div class="filter-label">筛选打分人（可多选，全不选=全部）：</div>
+    <div id="evaluator-checkboxes"></div>
+  </div>
   <button onclick="loadData()">刷新数据</button>
   <span id="loading"></span>
 </div>
@@ -78,6 +82,7 @@
 <script>
 const EXEC_URL = 'https://script.google.com/macros/s/AKfycbyOA5T9Mg8YVEJp8BsTf8mbd12f8QdDeZHZVWRzEO_8o2BGAiiiGPSGTaFyr3Vj0aOPFw/exec';
 const ROW_MODEL_MAP = {"0": ["model_0708", "model0714"], "1": ["model0714", "model_0708"], "2": ["model_0708", "model0714"], "3": ["model0714", "model_0708"], "4": ["model_0708", "model0714"], "5": ["model0714", "model_0708"], "6": ["model_0708", "model0714"], "7": ["model0714", "model_0708"], "8": ["model_0708", "model0714"], "9": ["model_0708", "model0714"], "10": ["model0714", "model_0708"], "11": ["model0714", "model_0708"], "12": ["model_0708", "model0714"], "13": ["model_0708", "model0714"], "14": ["model0714", "model_0708"], "15": ["model0714", "model_0708"], "16": ["model_0708", "model0714"], "17": ["model0714", "model_0708"], "18": ["model0714", "model_0708"], "19": ["model_0708", "model0714"], "20": ["model0714", "model_0708"], "21": ["model0714", "model_0708"], "22": ["model0714", "model_0708"], "23": ["model_0708", "model0714"], "24": ["model0714", "model_0708"], "25": ["model0714", "model_0708"], "26": ["model0714", "model_0708"], "27": ["model0714", "model_0708"], "28": ["model0714", "model_0708"], "29": ["model_0708", "model0714"], "30": ["model_0708", "model0714"], "31": ["model0714", "model_0708"], "32": ["model0714", "model_0708"], "33": ["model_0708", "model0714"], "34": ["model_0708", "model0714"], "35": ["model0714", "model_0708"], "36": ["model_0708", "model0714"], "37": ["model0714", "model_0708"], "38": ["model0714", "model_0708"], "39": ["model0714", "model_0708"], "40": ["model0714", "model_0708"], "41": ["model_0708", "model0714"], "42": ["model0714", "model_0708"], "43": ["model0714", "model_0708"], "44": ["model0714", "model_0708"], "45": ["model_0708", "model0714"], "46": ["model_0708", "model0714"], "47": ["model_0708", "model0714"], "48": ["model_0708", "model0714"], "49": ["model_0708", "model0714"], "50": ["model0714", "model_0708"], "51": ["model_0708", "model0714"], "52": ["model0714", "model_0708"], "53": ["model0714", "model_0708"], "54": ["model_0708", "model0714"], "55": ["model0714", "model_0708"], "56": ["model_0708", "model0714"], "57": ["model_0708", "model0714"], "58": ["model_0708", "model0714"], "59": ["model_0708", "model0714"], "60": ["model_0708", "model0714"], "61": ["model_0708", "model0714"], "62": ["model_0708", "model0714"], "63": ["model0714", "model_0708"], "64": ["model_0708", "model0714"], "65": ["model_0708", "model0714"], "66": ["model_0708", "model0714"], "67": ["model_0708", "model0714"], "68": ["model0714", "model_0708"], "69": ["model0714", "model_0708"], "70": ["model0714", "model_0708"], "71": ["model0714", "model_0708"], "72": ["model_0708", "model0714"], "73": ["model_0708", "model0714"], "74": ["model0714", "model_0708"], "75": ["model0714", "model_0708"], "76": ["model0714", "model_0708"], "77": ["model0714", "model_0708"], "78": ["model0714", "model_0708"], "79": ["model0714", "model_0708"], "80": ["model0714", "model_0708"], "81": ["model0714", "model_0708"], "82": ["model0714", "model_0708"], "83": ["model0714", "model_0708"], "84": ["model0714", "model_0708"], "85": ["model0714", "model_0708"], "86": ["model_0708", "model0714"], "87": ["model0714", "model_0708"], "88": ["model0714", "model_0708"], "89": ["model_0708", "model0714"], "90": ["model_0708", "model0714"], "91": ["model0714", "model_0708"], "92": ["model0714", "model_0708"], "93": ["model_0708", "model0714"], "94": ["model0714", "model_0708"], "95": ["model_0708", "model0714"], "96": ["model_0708", "model0714"], "97": ["model0714", "model_0708"], "98": ["model_0708", "model0714"], "99": ["model0714", "model_0708"]}; // row_index -> [model1, model2], or {} if not needed
+const TOTAL_ROWS = 100; // 0 = unknown, progress module shows raw counts only
 
 let allRows = [];
 let allCompletions = [];
@@ -119,12 +124,17 @@ function loadData() {
 }
 
 function populateEvaluatorFilter() {
-  const sel = document.getElementById('evaluator-filter');
-  const current = sel.value;
+  const container = document.getElementById('evaluator-checkboxes');
+  const previouslyChecked = new Set(getSelectedEvaluators());
   const evaluators = Array.from(new Set(allRows.map(function(r) { return r.evaluator; }))).sort();
-  sel.innerHTML = '<option value="">全部</option>' +
-    evaluators.map(function(e) { return '<option value="' + esc(e) + '">' + esc(e) + '</option>'; }).join('');
-  if (evaluators.indexOf(current) !== -1) sel.value = current;
+  container.innerHTML = evaluators.map(function(e) {
+    const checked = previouslyChecked.has(e) ? ' checked' : '';
+    return '<label><input type="checkbox" value="' + esc(e) + '"' + checked + ' onchange="render()"> ' + esc(e) + '</label>';
+  }).join('');
+}
+
+function getSelectedEvaluators() {
+  return Array.from(document.querySelectorAll('#evaluator-checkboxes input:checked')).map(function(cb) { return cb.value; });
 }
 
 function esc(s) {
@@ -208,21 +218,52 @@ function topReasons(reasonMap, n) {
 
 function pct(n, d) { return d ? (n / d * 100).toFixed(1) + '%' : '—'; }
 
+function renderProgressModule() {
+  const evaluators = Array.from(new Set(allRows.map(function(r) { return r.evaluator; }))).sort();
+  const submittedSet = new Set(allCompletions.map(function(c) { return c.evaluator; }));
+
+  let html = '<div class="card"><h2>评测人进度' + (TOTAL_ROWS ? '（共 ' + TOTAL_ROWS + ' 行）' : '') + '</h2><div class="table-wrap"><table>';
+  html += '<tr><th>评测人</th><th class="num">已打标</th><th class="num">完全填完</th><th>完成进度</th><th class="num">已点提交</th></tr>';
+  evaluators.forEach(function(ev) {
+    const evRows = allRows.filter(function(r) { return r.evaluator === ev; });
+    const completed = evRows.filter(isRowComplete).length;
+    const submitted = submittedSet.has(ev);
+    const p = TOTAL_ROWS ? Math.round(completed / TOTAL_ROWS * 100) : 0;
+    html += '<tr><td>' + esc(ev) + '</td>' +
+      '<td class="num">' + evRows.length + (TOTAL_ROWS ? ' / ' + TOTAL_ROWS : '') + '</td>' +
+      '<td class="num">' + completed + (TOTAL_ROWS ? ' / ' + TOTAL_ROWS : '') + '</td>' +
+      '<td>' + (TOTAL_ROWS
+        ? '<div class="progress-bar-track"><div class="progress-bar-fill" style="width:' + p + '%"></div></div>'
+        : '—') + '</td>' +
+      '<td class="num">' + (submitted ? '<span class="pill good">是</span>' : '<span class="pill neutral">否</span>') + '</td></tr>';
+  });
+  html += '</table></div></div>';
+  return html;
+}
+
 function render() {
   if (!allRows.length) return;
-  const filterEvaluator = document.getElementById('evaluator-filter').value;
-  const rows = filterEvaluator ? allRows.filter(function(r) { return r.evaluator === filterEvaluator; }) : allRows;
+  const selected = getSelectedEvaluators();
+  const rows = selected.length ? allRows.filter(function(r) { return selected.indexOf(r.evaluator) !== -1; }) : allRows;
   const stats = computeStats(rows);
+
+  const filterLabel = selected.length === 0 ? '全部评测人合计'
+    : selected.length === 1 ? esc(selected[0]) + ' 的打标情况'
+    : selected.map(esc).join('、') + ' 合计';
 
   let html = '';
 
   // Overview cards
-  html += '<div class="card"><h2>' + (filterEvaluator ? esc(filterEvaluator) + ' 的打标情况' : '全部评测人合计') + '</h2>';
+  html += '<div class="card"><h2>' + filterLabel + '</h2>';
   html += '<div class="stat-row">';
   html += '<div class="stat"><span class="v">' + stats.totalRows + '</span><span class="l">总打标行数</span></div>';
   html += '<div class="stat"><span class="v">' + stats.completedCount + '</span><span class="l">完全填完（GSB+双边质量）</span></div>';
   html += '<div class="stat"><span class="v">' + allCompletions.length + '</span><span class="l">点击过"提交本次评测"的人数</span></div>';
   html += '</div></div>';
+
+  // Evaluator progress module — always shows everyone regardless of the
+  // checkbox filter above (the filter only scopes the breakdown cards below).
+  html += renderProgressModule();
 
   // GSB breakdown
   html += '<div class="card"><h2>GSB 选择分布</h2><div class="table-wrap"><table><tr><th>选项</th><th class="num">次数</th><th class="num">占比</th></tr>';
